@@ -39,7 +39,21 @@ function App() {
         "ISC",
         "ICBPER",
         "Otros Trib/ Cargos",
-        "Tipo de Cambio"
+        "Tipo de Cambio",
+        "Valor Facturado Exportación",
+        "BI Gravada",
+        "Dscto BI",
+        "IGV / IPM",
+        "Dscto IGV / IPM",
+        "Mto Exonerado",
+        "Mto Inafecto",
+        "ISC",
+        "BI Grav IVAP",
+        "IVAP",
+        "ICBPER",
+        "Otros Tributos",
+        "Total CP",
+        "Tipo Cambio",
       ];
 
       // Identificar índices de columnas que deben ser numéricas
