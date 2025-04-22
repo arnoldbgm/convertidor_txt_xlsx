@@ -23,9 +23,42 @@ function App() {
         skipEmptyLines: true
       });
 
-      const data = parsed.data.map(row =>
+      const rawData = parsed.data.map(row =>
         row.map(cell => cell.trim())
       );
+
+      const headers = rawData[0];
+      const numericHeaders = [
+        "BI Gravado DG",
+        "IGV / IPM DG",
+        "BI Gravado DGNG",
+        "IGV / IPM DGNG",
+        "BI Gravado DNG",
+        "IGV / IPM DNG",
+        "Valor Adq. NG",
+        "ISC",
+        "ICBPER",
+        "Otros Trib/ Cargos",
+        "Tipo de Cambio"
+      ];
+
+      // Identificar índices de columnas que deben ser numéricas
+      const numericIndexes = headers.map((header, i) =>
+        numericHeaders.includes(header) ? i : -1
+      ).filter(i => i !== -1);
+
+      // Convertir las columnas numéricas
+      const data = rawData.map((row, rowIndex) => {
+        if (rowIndex === 0) return row; // Dejar los encabezados
+        return row.map((cell, colIndex) => {
+          if (numericIndexes.includes(colIndex)) {
+            const cleaned = cell.replace(",", ".").replace(/[^0-9.-]/g, "");
+            const number = parseFloat(cleaned);
+            return isNaN(number) ? "" : number;
+          }
+          return cell;
+        });
+      });
 
       const worksheet = XLSX.utils.aoa_to_sheet(data);
       const workbook = XLSX.utils.book_new();
@@ -35,7 +68,7 @@ function App() {
       const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
       saveAs(blob, "archivo_convertido.xlsx");
 
-      // 🔁 Permite volver a subir el mismo archivo
+      // Permitir volver a cargar el mismo archivo
       e.target.value = null;
       fileInputRef.current.value = null;
     };
