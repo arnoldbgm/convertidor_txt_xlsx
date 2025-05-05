@@ -19,12 +19,20 @@ function App() {
       const text = event.target.result;
 
       const parsed = Papa.parse(text, {
-        delimiter: "|",
-        skipEmptyLines: true
+        delimiter: "|", // Delimitado por "|"
+        skipEmptyLines: true,
+        quoteChar: '"', // Especificar comillas dobles como delimitador de texto
+        escapeChar: "\\", // Escapar las comillas dobles
       });
 
       const rawData = parsed.data.map(row =>
-        row.map(cell => cell.trim())
+        row.map(cell => {
+          if (typeof cell === 'string') {
+            // Eliminar los espacios en blanco alrededor y corregir las comillas si es necesario
+            return cell.trim().replace(/""/g, '"');
+          }
+          return cell;
+        })
       );
 
       const headers = rawData[0];
@@ -66,9 +74,9 @@ function App() {
         if (rowIndex === 0) return row; // Dejar los encabezados
 
         return row.map((cell, colIndex) => {
-          // Limpiar comillas internas innecesarias
-          if (typeof cell === "string") {
-            cell = cell.replace(/"+/g, '').trim(); // Elimina todas las comillas dobles
+          // Control de comillas dobles
+          if (typeof cell === "string" && cell.includes('"')) {
+            cell = cell.replace(/""/g, '"'); // Convertir comillas dobles escapadas a comillas simples
           }
 
           // Truncar celdas largas para evitar error de Excel
