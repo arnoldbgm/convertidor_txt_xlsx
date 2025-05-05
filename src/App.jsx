@@ -56,23 +56,33 @@ function App() {
         "Tipo Cambio",
       ];
 
-      // Identificar índices de columnas que deben ser numéricas
       const numericIndexes = headers.map((header, i) =>
         numericHeaders.includes(header) ? i : -1
       ).filter(i => i !== -1);
 
-      // Convertir las columnas numéricas
+      let largeCellDetected = false;
+
       const data = rawData.map((row, rowIndex) => {
-        if (rowIndex === 0) return row; // Dejar los encabezados
+        if (rowIndex === 0) return row;
         return row.map((cell, colIndex) => {
           if (numericIndexes.includes(colIndex)) {
             const cleaned = cell.replace(",", ".").replace(/[^0-9.-]/g, "");
             const number = parseFloat(cleaned);
             return isNaN(number) ? "" : number;
           }
+
+          if (typeof cell === "string" && cell.length > 32767) {
+            largeCellDetected = true;
+            return cell.slice(0, 32767); // Truncar celda
+          }
+
           return cell;
         });
       });
+
+      if (largeCellDetected) {
+        alert("Se detectaron celdas con más de 32,767 caracteres. Fueron truncadas para evitar errores en Excel.");
+      }
 
       const worksheet = XLSX.utils.aoa_to_sheet(data);
       const workbook = XLSX.utils.book_new();
@@ -82,7 +92,6 @@ function App() {
       const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
       saveAs(blob, "archivo_convertido.xlsx");
 
-      // Permitir volver a cargar el mismo archivo
       e.target.value = null;
       fileInputRef.current.value = null;
     };
